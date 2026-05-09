@@ -166,6 +166,64 @@ Prepare the dataset directory so that it contains:
 
 The base model can be either a local model folder or a Hugging Face model id. For offline review, set `MODEL_ID` to a local folder containing the downloaded base model.
 
+The two main training schemes used in the report can be launched as follows.
+
+Train with caption-enhanced prompt:
+
+``` bash
+DATA_DIR=/path/to/data \
+MODEL_ID=/path/to/base_model_or_HuggingFaceTB/SmolVLM-500M-Instruct \
+OUTPUT_DIR=/path/to/outputs/caption_prompt \
+OUTPUT_ROOT=/path/to/outputs \
+HF_CACHE_DIR=/path/to/hf_cache \
+LOG_DIR=/path/to/logs \
+USE_CAPTION=true \
+LORA_TARGETS=auto \
+LORA_R=8 \
+LORA_ALPHA=16 \
+bash run_train_infer.sh
+```
+
+Inference from the caption-enhanced checkpoint:
+
+``` bash
+DATA_DIR=/path/to/data \
+MODEL_ID=/path/to/base_model_or_HuggingFaceTB/SmolVLM-500M-Instruct \
+ADAPTER_DIR=/path/to/outputs/caption_prompt/adapter_best \
+HF_CACHE_DIR=/path/to/hf_cache \
+LOG_DIR=/path/to/logs \
+USE_CAPTION=true \
+bash run_infer.sh
+```
+
+Train with caption + attention-only LoRA, `r=16`, `alpha=32`(our final submission configuration):
+
+``` bash
+DATA_DIR=/path/to/data \
+MODEL_ID=/path/to/base_model_or_HuggingFaceTB/SmolVLM-500M-Instruct \
+OUTPUT_DIR=/path/to/outputs/caption_attn_lora16_alpha32 \
+OUTPUT_ROOT=/path/to/outputs \
+HF_CACHE_DIR=/path/to/hf_cache \
+LOG_DIR=/path/to/logs \
+USE_CAPTION=true \
+LORA_TARGETS=attn \
+LORA_R=16 \
+LORA_ALPHA=32 \
+bash run_train_infer.sh
+```
+
+Inference from the caption + attention-only LoRA checkpoint:
+
+``` bash
+DATA_DIR=/path/to/data \
+MODEL_ID=/path/to/base_model_or_HuggingFaceTB/SmolVLM-500M-Instruct \
+ADAPTER_DIR=/path/to/outputs/caption_attn_lora16_alpha32/adapter_best \
+HF_CACHE_DIR=/path/to/hf_cache \
+LOG_DIR=/path/to/logs \
+USE_CAPTION=true \
+bash run_final_infer.sh
+```
+
 Run final training:
 
 ``` bash
@@ -185,12 +243,32 @@ adapter_last/
 submission.csv
 ```
 
+Download the best checkpoint archive from Google Drive and unzip it:
+
+``` bash
+pip install gdown
+
+GOOGLE_DRIVE_URL=""
+CKPT_ZIP=/path/to/best_checkpoint.zip
+CKPT_DIR=/path/to/best_checkpoint
+
+gdown "${GOOGLE_DRIVE_URL}" -O "${CKPT_ZIP}"
+mkdir -p "${CKPT_DIR}"
+unzip "${CKPT_ZIP}" -d "${CKPT_DIR}"
+```
+
+After unzipping, set `ADAPTER_DIR` to the extracted adapter folder. For example, if the archive contains `adapter_best/`, use:
+
+``` bash
+ADAPTER_DIR=/path/to/best_checkpoint/adapter_best
+```
+
 Run final inference from a saved adapter:
 
 ``` bash
 DATA_DIR=/path/to/data \
 MODEL_ID=/path/to/base_model_or_HuggingFaceTB/SmolVLM-500M-Instruct \
-ADAPTER_DIR=/path/to/outputs/<timestamp>/adapter_best \
+ADAPTER_DIR=/path/to/best_checkpoint/adapter_best \
 HF_CACHE_DIR=/path/to/hf_cache \
 LOG_DIR=/path/to/logs \
 bash run_final_infer.sh
@@ -201,7 +279,7 @@ The inference script writes `submission_<timestamp>.csv` into `ADAPTER_DIR` by d
 ``` bash
 DATA_DIR=/path/to/data \
 MODEL_ID=/path/to/base_model_or_HuggingFaceTB/SmolVLM-500M-Instruct \
-ADAPTER_DIR=/path/to/outputs/<timestamp>/adapter_best \
+ADAPTER_DIR=/path/to/best_checkpoint/adapter_best \
 SUBMISSION_FILE=/path/to/submission.csv \
 HF_CACHE_DIR=/path/to/hf_cache \
 LOG_DIR=/path/to/logs \
