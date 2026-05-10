@@ -6,6 +6,12 @@ Team member:
 
 **Yifan Hu (yh6416)**
 
+### Environment Setup
+
+```bash
+pip install -q transformers==4.57.6 peft==0.18.1 bitsandbytes accelerate datasets pillow gdown pandas tqdm numpy
+```
+
 ### Experiment
 
 ##### Loss Experiment
@@ -151,7 +157,7 @@ The final training and inference entry points are:
 Install dependencies:
 
 ``` bash
-pip install -r requirements.txt
+pip install -q transformers==4.57.6 peft==0.18.1 bitsandbytes accelerate datasets pillow gdown pandas tqdm numpy
 ```
 
 Prepare the dataset directory so that it contains:
@@ -248,13 +254,15 @@ Download the best checkpoint archive from Google Drive and unzip it:
 ``` bash
 pip install gdown
 
-GOOGLE_DRIVE_URL=""
-CKPT_ZIP=/path/to/best_checkpoint.zip
+// link to our submission checkpoint archive on Google Drive
+GOOGLE_DRIVE_URL="https://drive.google.com/file/d/1qxZ5xgQY8Ib3hqjL0loQuEZDguGkT4PO/view?usp=drive_link"
+// sometimes godown cannot successfully download the file, in that case, download the file manually and set CKPT_ZIP to the local path of the downloaded file
+CKPT_ZIP=/path/to/best_checkpoint.tar.gz
 CKPT_DIR=/path/to/best_checkpoint
 
 gdown "${GOOGLE_DRIVE_URL}" -O "${CKPT_ZIP}"
 mkdir -p "${CKPT_DIR}"
-unzip "${CKPT_ZIP}" -d "${CKPT_DIR}"
+tar -xzf "${CKPT_ZIP}" -C "${CKPT_DIR}"
 ```
 
 After unzipping, set `ADAPTER_DIR` to the extracted adapter folder. For example, if the archive contains `adapter_best/`, use:
